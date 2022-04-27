@@ -1,23 +1,40 @@
+<!DOCTYPE html>
 <html>
     <head>
         <title>Groove experiment</title>   
-        <script src="https://unpkg.com/jspsych@7.1.2"></script>
-        <script src="https://unpkg.com/@jspsych/plugin-instructions@1.1.0"></script>
-        <script src="https://unpkg.com/@jspsych/plugin-preload@1.1.0"></script>
-        <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.0"></script>
-        <script src="https://unpkg.com/@jspsych/plugin-audio-button-response@1.1.0"></script> 
-        <script src="https://unpkg.com/@jspsych/plugin-survey-likert@1.1.0"></script>        
-        <script src="https://unpkg.com/@jspsych/plugin-audio-slider-response@1.1.0"></script>
-        <script src="https://unpkg.com/@jspsych/plugin-call-function@1.1.0"></script>
-        <script src="https://unpkg.com/@jspsych/plugin-external-html@1.1.0"></script>
-        <script src="https://unpkg.com/@jspsych/plugin-browser-check@1.1.0"></script>
-        <script src="https://unpkg.com/@jspsych/plugin-fullscreen@1.1.0"></script>
-        <link href="https://unpkg.com/jspsych@7.1.2/css/jspsych.css" rel="stylesheet" type="text/css" />
-       <script src='groove_experiment.js'> </script>
+        <script src="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/jspsych.js"></script>
+        <script src="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/plugin-instructions.js"></script>
+        <script src="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/plugin-preload.js"></script>
+        <script src="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/plugin-html-keyboard-response.js"></script>
+        <script src="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/plugin-audio-button-response.js"></script> 
+        <script src="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/plugin-audio-keyboard-response.js"></script> 
+        <script src="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/plugin-survey-likert.js"></script>     
+        <script src="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/plugin-survey-multi-choice.js"></script>  
+        <script src="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/plugin-survey-text.js"></script>        
+        <script src="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/plugin-html-slider-response.js"></script>
+        <script src="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/plugin-call-function.js"></script>
+        <script src="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/plugin-external-html.js"></script>
+        <script src="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/plugin-fullscreen.js"></script>
+        <link href="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/jspsych.css" rel="stylesheet" type="text/css" />
+        <script src='groove_experiment.js'> </script>
     </script>
     <style>
         body {
-          background-color: #ccd2dad8;
+          background-color: #DBE4E4;
+        }
+        body::before{
+          content: ' ';
+          position: absolute;
+          top: 30px;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: url(mib.png);
+          background-position: 105% 110%;
+          background-repeat: no-repeat;
+          background-attachment: fixed;
+          z-index: -1;
+          opacity: 0.1;
         }
 
       </style>

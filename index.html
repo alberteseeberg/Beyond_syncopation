@@ -15,6 +15,8 @@
         <script src="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/plugin-call-function.js"></script>
         <script src="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/plugin-external-html.js"></script>
         <script src="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/plugin-fullscreen.js"></script>
+        <script src="https://shaddam.cogsciexperiment.au.dk/groove/sound_files.js"></script>
+        <script src="https://shaddam.cogsciexperiment.au.dk/groove/sound_preload.js"></script>
         <link href="https://shaddam.cogsciexperiment.au.dk/groove/jspsych/jspsych.css" rel="stylesheet" type="text/css" />
         <script src='groove_experiment.js'> </script>
     </script>
@@ -23,7 +25,7 @@
           background-color: #DBE4E4;
         }
         body::before{
-          content: ' ';
+          content: url(aulogo.png);
           position: absolute;
           top: 30px;
           bottom: 0;
@@ -32,7 +34,7 @@
           background: url(mib.png);
           background-position: 105% 110%;
           background-repeat: no-repeat;
-          background-attachment: fixed;
+          background-attachment: scroll;
           z-index: -1;
           opacity: 0.1;
         }

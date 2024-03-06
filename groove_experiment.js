@@ -1,12 +1,9 @@
 /* initialize jsPsych */
 var jsPsych = initJsPsych({
-  on_interaction_data_update: function (data) {
-    console.log(data);
-    saveData(subject_id + '_browserinteraction_data.csv', jsPsych.data.getInteractionData().csv())
-  },
+  default_iti: 300,
   on_finish: function() {
    console.log(jsPsych.data.get().csv());
-   window.location = 'https://app.prolific.co/submissions/complete?cc=35D00DA2'
+   window.location = 'https://shaddam.cogsciexperiment.au.dk/Done/'
   }
 });
 
@@ -20,8 +17,7 @@ var preload = {
   message: 'Please wait while the experiment is loading',
   show_detailed_errors: true
 }
-/*timeline.push(preload);
-
+timeline.push(preload);
 
 /* define welcome message trial */
 var instructions = {
@@ -29,29 +25,15 @@ var instructions = {
   pages: [
    '<h1 ><b>Welcome!</b></h1>'+
    '<p>This is an experiment investigating your perception of drum rhythms. </p>' +
-   '<p>We kindly ask you to use a computer and not a phone and to sit in a <b>quiet</b> room for the duration of this </p>' +
-   '<p>experiment so you can concentrate on the rhythms. Also, please do not use the Safari web browser </p>'+
-   '<p style="margin-bottom: 2em">(Chrome, Edge, or Firefox are recommended). Finally, please use the best quality headphones that you have access to. </p>'+
-   '<p>For the next 20 minutes, you will listen to <b>50</b> different drum rhythms. </p>' +
-   '<p> After each rhythm you will be asked to <b>rate</b> the <b>complexity</b> and <b>naturalness</b> of the rhythm as well as your experience of <b>groove</b>.'+
-   '<p style="margin-bottom: 2em">What is meant by complexity, naturalness and groove will be explained in the instructions on the next page. </p>' +
-   '<p>First, you will be asked some questions about your musical expertise and the quality of your headphones. </p>' +
-   '<p style="margin-bottom: 2em">Then, you will be able to adjust the sound volume to a comfortable level before beginning the experiment.</p>'+
-   '<p>During the experiment, to confirm that you are concentrating on the rhythms, </p>' +
-   '<p>the browser will automatically register whether you leave the experiment window.</p>'+
-   '<p style="margin-bottom: 2em">In addition, there will be two nonsense questions throughout the experiment to confirm that you are reading the questions closely. </p>'+
-    "<p>By clicking 'Next', you confirm that you have read and understood the participant information found <a href='Participant Information_GrooveGen_final_ABS_TM.pdf'target='_blank'>here</a>.</p>"+
-    "<p>Click 'Next' to continue. </p>",
-    '<h1><b>Instructions</b></h1>'+
-    '<p>After each rhythm you will be asked to rate the <b>complexity</b> of the rhythm, that is, how difficult you imagine it would be </p>' +
-    '<p>for an average drummer to play this rhythm.</p>' +
-    '<p>You will also be asked to rate the <b>naturalness</b> of the rhythm, that is, how likely or plausible it is that a real</p>' +
-    '<p>drummer would come up with this rhythm. </p>'+
-    '<p>Finally, you will be asked to rate the degree of <b>groove</b> you experience while listening to the rhythm, that is, the degree </p>' +
-    '<p>to which you experienced a pleasurable urge to move along to the rhythm. </p>' +
-    '<p>During the experiment you can <b>review these definitions</b> by holding your mouse over the words <i> complex</i>, <i> natural</i>, or <i> groove</i>. </p>' +
-    '<p>You will make each rating on a scale from 0 to 100, where 0 = not at all and 100 = very much. Please ensure to use the entire rating scale.</p>'+
-    '<p>The order in which you do the ratings will change on each trial.</p>'+
+   '<p>You will be asked to listen to several drum rhythms. After each rhythm,</p>' +
+   '<p style="margin-bottom: 2.5em"> you will be asked to rate your experience of pleasure and your experience of wanting to move. </p>' +
+   '<p>We kindly ask you to sit in a <b>quiet</b> room for the duration of this experiment so you can</p>' +
+   '<p>concentrate on the rhythms. Also, please do not use the Safari or Firefox web browsers </p>'+
+   '<p style="margin-bottom: 2.5em">(Chrome or Edge are recommended). Finally, please use the best quality headphones that you have access to.</p>'+
+    '<p>Before you do the actual experiment, we would like to ask you some questions about your demographics, your hearing, and your musical expertise. </p>' +
+    '<p>After having answered these questions, you will be directed to the instructions for the experiment.'+
+    "<p>By clicking 'Next', you confirm that you have <b>read and understood</b> the participant information found <a href='Participant_Information_NH.pdf'target='_blank'>here</a>.</p>"+
+    '<p style="margin-bottom: 2.5em">Thank you for participating.</p>' +
      "<p>Click 'Next' to continue.</p>"
 ],
   allow_keys: false,
@@ -62,10 +44,10 @@ timeline.push(instructions);
 
 /*demographics trial*/
       
-/*var sex_scale = ["Female", "Male", "Other", "Do not wish to inform"];
+var sex_scale = ["Female", "Male", "Other", "Do not wish to inform"];
 var age_scale = ["<20", "20-29", "30-39", "40-49","50-59", "60-69", "70-79", "80+", "Do not wish to inform"];
 
-var demographics_1 = {
+/*var demographics_1 = {
   type: jsPsychSurveyMultiChoice,
   preamble: "<h1>Demographic Questionnaire</h1>",
   questions: [	
@@ -81,17 +63,37 @@ This includes both short and long responses
 to create a long response, increase the number of rows
 **/
 
-/*var demographics_2 = {
+var demographics_2 = {
   type: jsPsychSurveyText,
   preamble: "<h1>Demographic Questionnaire</h1>",
   questions: [
-    {prompt: "Country in which you spent the formative years of your childhood and youth", rows: 1, required: true},
-    {prompt: "Country of current residency", rows: 1, required:true}
+    {prompt: "<b>Biological sex</b>", rows: 1, placeholder: 'M/F', name: 'gender', required: true},
+    {prompt: "<b>Age</b>", name: 'Age', rows: 1, placeholder: 'Type number', required: true},
+    {prompt: "<b>Country in which you spent the formative years of your childhood and youth</b>", name: 'Origin', rows: 1, required: true},
+    {prompt: "<b>Country of current residency</b>", name: 'country_cur', rows: 1, required:true}
   ],
   button_label: "Next",
 }
-timeline.push(demographics_2);*/
+timeline.push(demographics_2);
 
+/*hearing trial*/
+
+var one_two = ["None", "One", "Two"];
+var yes_no = ["Yes", "No"];
+var scale = ["Never", "Very Rarely", "Rarely", "Occasionally", "Very Frequently", "Always"];
+/*var age_scale = ["<20", "20-29", "30-39", "40-49","50-59", "60-69", "70-79", "80+", "Do not wish to inform"];*/
+
+var hearing = {
+  type: jsPsychSurveyMultiChoice,
+  preamble: "<h2>Questions regarding hearing</h2>",
+  questions: [	
+    {prompt: "<p><b>Do you have tinnitus?</b>", options: yes_no, required: true},
+    {prompt: "<p><b>Do you have a hearing aid? If so, how many?</b>", options: one_two, required: true},
+    {prompt: "<p><b>Do you experience difficulties in daily life due to dizziness?</b>", options: scale, required: true, horizontal: true}
+  ],
+  button_label: "Next",
+}
+timeline.push(hearing);
 
 var music_status = ["I have never regularly practiced a musical instrument", "I still practice a musical instrument on a regular basis", "It has been less than 1 year since I stopped practicing regularly", "It has been more than 1 year since I stopped practicing regularly", "It has been more than 5 years since I stopped practicing regularly", "It has been more than 10 years since I stopped practicing regularly"]
 var music_freq = ["I have never practiced an instrument on a regular basis", "2-5 times per month", "2-5 times per week", "Every day or almost every day"]
@@ -101,7 +103,7 @@ var music_enjoyment = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
 
 var musical_background = {
   type: jsPsychSurveyMultiChoice,
-  preamble: "<h1>Musical background</h1>",
+  preamble: "<h2>Musical background</h2>",
   questions: [	
     {prompt: "<p><b>Years of formal training on a musical instrument (including voice) during my lifetime</b>", options: music_experience, required: true, horizontal: true},
     {prompt: "<p><b>Time spent on average listening attentively to music per day</b>", options: music_listening, required: true, horizontal: true},
@@ -112,6 +114,27 @@ var musical_background = {
   button_label: "Next",
 }
 timeline.push(musical_background); 
+
+var instructions2 = {
+  type: jsPsychInstructions,
+  pages: [
+'<h1><b>Instructions</b></h1>'+
+'<p>For the next 15 minutes, you will listen to <b>38</b> different drum rhythms. </p>' +
+'<p>After each rhythm you will be asked to <b>rate</b> how much the rhythm makes you <b>want to move</b> and how much <b>pleasure</b> you experienced while listening to it.'+
+'<p style="margin-bottom: 2.5em">"Wanting to move" refers to the urge to tap your foot, bob your head, or dance to the rhythm.</p>' +
+'<p>You will make each rating on a scale from 0 to 100, where <b>0 = none/not at all</b> and <b>100 = very much</b>. Please ensure to use the entire rating scale.</p>'+
+'<p style="margin-bottom: 2.5em">The order in which you do the ratings will change on each trial.</p>'+
+'<p>First, you will be asked some questions about the quality of your headphones. </p>' +
+'<p style="margin-bottom: 2.5em">Then, you will be able to adjust the sound volume to a comfortable level before beginning the experiment.</p>'+
+'<p>There will be two nonsense questions throughout the experiment to confirm that you are reading the questions closely. </p>'+
+'<p>When these appear, please choose 0 on the rating scale. </p>'+
+ "<p>Click 'Next' to continue.</p>"
+],
+allow_keys: false,
+show_clickable_nav: true
+}
+/* add this node to the timeline */
+timeline.push(instructions2);
 
 /*headphones quality question */
 var headphone_question = {
@@ -139,7 +162,7 @@ timeline.push(headphone_question);
 /* check sound*/
 var sound_test = {
   type: jsPsychInstructions,
-  pages: [ '<audio id="testAudio"><source src="audio/Test_gg_19.wav" type="audio/wav"></audio><h1>Sound Test</h1><p>Please test your sound by clicking the button below. You may click it multiple times to adjust your volume so you can hear it clearly. </p>' +
+  pages: [ '<audio id="testAudio"><source src="audio/Test_gg_147_32bit.wav" type="audio/wav"></audio><h1>Sound Test</h1><p>Please test your sound by clicking the button below. You may click it multiple times to adjust your volume so you can hear it clearly. </p>' +
   '<p> When you have adjusted the sound to a comfortable level, press next to continue.</p>' +
   '<p> <button onclick="playSound()" type="button" class="snd-btn"><img src="img/speaker.png" height="90 width="135" alt="Click to test sound" /></button> </p>' 
 ], 
@@ -155,6 +178,7 @@ function playSound(){
 
 timeline.push(sound_test);
 
+
 /* enter fullscreen */
 timeline.push({
   type: jsPsychFullscreen,
@@ -164,13 +188,25 @@ timeline.push({
 
 /* create variable containing the files for the nonsense-trials*/
 var sound_files_nonsense = [
-  {jibber: 'audio/Nonsense_real_33.wav'},
-  {jibber: 'audio/Nonsense_gg_17.wav'},
+  {jibber: 'audio/Nonsense_gg_150_32bit.wav'},
 ]
+
+
+/*NORMAL TRIAL*/
+
+/*create a count trial*/
+var trial_count = 0
 
 var n_trials = 48
 
-/*NORMAL TRIAL*/
+/* define pre-audio trial*/
+var pre_audio_trial = {
+  type: jsPsychAudioKeyboardResponse,
+  stimulus: 'audio/HH.wav',
+  choices: "NO_KEYS",
+  trial_ends_after_audio: true
+}
+
 /* define audio trial*/
 var audio_trial = {
   type: jsPsychAudioKeyboardResponse,
@@ -184,11 +220,9 @@ var audio_trial = {
 /* define different rating questions */
 var responses = [
   {stimulus: `<div style="width:500px;">
-        <p>How <dfn title="How difficult you imagine it would be for an average drummer to play this rhythm.">complex</dfn> did this rhythm sound to you?</p>`},
+        <p>How much did this rhythm make you want to move?</p>`},
   {stimulus: `<div style="width:500px;">
-        <p>How <dfn title="How likely or plausible it is that a real drummer would come up with this rhythm.">natural</dfn> did this rhythm sound to you?</p>`},
-  {stimulus: `<div style="width:500px;">
-        <p>To what degree did you experience <dfn title="The degree to which you experienced a pleasurable urge to move along to the rhythm.">groove</dfn> while listening to this rhythm?</p>`},
+        <p>How much pleasure did you experience while listening to this rhythm?</p>`},
 ]
 
 /* define a rating trial */
@@ -197,7 +231,7 @@ var rating = {
   stimulus: jsPsych.timelineVariable('stimulus'),
   slider_start: 0,
   require_movement: true,
-  labels: ['Not at all', 'Very much']
+  labels: ['0 (None/not at all)','20','40','60','80', '100 (Very much)']
 }
 
 /* define procedure for rating trials */
@@ -230,8 +264,9 @@ var non_responses = [
 var non_rating = {
   type: jsPsychHtmlSliderResponse,
   stimulus: jsPsych.timelineVariable('non_stimulus'),
+  slider_start: 0,
   require_movement: true,
-  labels: ['Not at all', 'Very much']
+  labels: ['0 (None/not at all)','20','40','60','80', '100 (Very much)']
 }
 
 /* define procedure for nonsense rating trials */
@@ -244,16 +279,13 @@ var rando_non_rating = {
 /* define audio procedure for nonsense trials */
 var rando_non_audio = {
   timeline: [non_audio_trial],
-  timeline_variables: window['Rando_'+ Math.floor((Math.random() * 2) + 1)],
+  timeline_variables: sound_files_nonsense
 }
 
 /* define procedure for random trial*/
 var nonsense = {
-  timeline:[rando_non_audio, rando_non_rating]
+  timeline:[pre_audio_trial, rando_non_audio, rando_non_rating]
 }
-
-/*create a count trial*/
-var trial_count = 0
 
 /*create a conditional timeline for the random questions*/
 var nonsense_conditional = {
@@ -273,7 +305,7 @@ var nonsense_conditional = {
 
 /* define procedure for trials */
 var procedure = {
-  timeline: [nonsense_conditional, audio_trial, rando_rating],
+  timeline: [nonsense_conditional, pre_audio_trial, audio_trial, rando_rating],
   timeline_variables: window["sound_files"],
   randomize_order: true
 }
@@ -283,12 +315,11 @@ timeline.push(procedure)
 /* create thank-you node */
 var thanks = {
   type: jsPsychInstructions,
-  pages: ['<p>The experiment is now completed. Thank you very much for participating! Please click next to let Prolific know the study was completed.'],
+  pages: ['<p>Please click next to complete the study.'],
   allow_keys: false,
   show_clickable_nav: true,
   on_load: function () {
-    saveData(subject_id + '_browserinteraction_data_rep.csv', jsPsych.data.getInteractionData().csv())
-    saveData(subject_id + '_groove_data_rep.csv', jsPsych.data.get().csv()); 
+    saveData(subject_id + '_groove_data_NH.csv', jsPsych.data.get().csv()); 
   }
 }
 
@@ -323,24 +354,12 @@ function saveData(name, data){
 }
 
 
-
-
 /* add data properties */
 jsPsych.data.addProperties({start_time: (new Date()).toISOString()});
 /* this is for allocating participant numbers*/
 var participant_id = jsPsych.data.getURLVariable('participant');
 var subject_id = jsPsych.randomization.randomID(15);
 jsPsych.data.addProperties({participant: subject_id});
-/* add properties from prolific */
-var prol_id = jsPsych.data.getURLVariable('PROLIFIC_PID');
-var study_id = jsPsych.data.getURLVariable('STUDY_ID');
-var session_id = jsPsych.data.getURLVariable('SESSION_ID');
-
-jsPsych.data.addProperties({
-    prol_id: prol_id,
-    study_id: study_id,
-    session_id: session_id,
-  });
 
 /* when all nodes have been added to the timeline, initiate the experiment */
 jsPsych.run(timeline);

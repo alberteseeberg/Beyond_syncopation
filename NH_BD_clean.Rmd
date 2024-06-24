@@ -1,0 +1,222 @@
+---
+title: "NH_BD_clean"
+author: "Alberte Seeberg"
+date: "2024-02-15"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+```{r include = FALSE}
+#set work directory
+setwd('/Users/au555044/Desktop/CI_Groove_Project/Online/Online_CI/BD_follow_up/')
+
+#load packages
+library(tidyverse)
+library(ggplot2)
+library(cowplot)
+library(lme4)
+library(afex)
+library(ggpubr)
+library(rmcorr)
+library(car)
+library(dplyr)
+library(emmeans)
+library(jtools)
+library(kableExtra)
+
+#read data
+df_m = read.csv('df_m.csv')
+df_m$Version = factor(df_m$Version, levels = c('BD+SN+HH', 'BD+SN','BD+HH','BD'))
+df_m$yrsTraining = as.factor(df_m$yrsTraining)
+df_m$ID = as.factor(df_m$ID)
+df_m$dizziness = as.factor(df_m$dizziness)
+df_m$study = 2
+write.csv(df_m, 'df_2_across.csv')
+```
+
+
+########                               ~*~*~*~*~*~*~*~*~*~*                             ##########
+#                                            Plots!                                             #
+##############                         *~*~*~*~*~*~*~*~*~*~                           ###########
+
+
+```{r}
+
+p_BD =ggplot(df_m, aes(x = wSI, y= rating, group = Version, colour = Version))+
+  #geom_point(aes(colour = rhythmType))+
+  ylim(0,100)+
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = TRUE)+
+  ylab("Rating")+xlab("Degree of syncopation") + theme_minimal(base_size = 15) + scale_color_brewer(palette="Dark2")+theme(axis.title.x=element_blank(), axis.title.y=element_blank(), legend.position="none")
+
+p_BD
+
+
+#Using wSI
+p =ggplot(df_m, aes(x = wSI, y= rating, group = Version, colour = Version))+
+  #geom_point(aes(colour = rhythmType))+
+  ylim(0,100)+
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = TRUE)+
+  ylab("Rating")+xlab("Degree of syncopation")
+
+p + theme_minimal(base_size = 15) + scale_color_brewer(palette="Dark2")
+
+
+plot_data = df_m
+plot_data$Version=factor(plot_data$Version, levels = c('BD', 'BD+HH','BD+SN','BD+SN+HH'))
+#Plot checking slopes per participant
+p =ggplot(plot_data)+
+  facet_grid(~Version)+
+  #ylim(,100)+
+  geom_smooth(aes(x = wSI, y= rating, group = ID, colour = ID), method = "lm", formula = y ~ poly(x, 2), se = FALSE, size = 0.3)+
+  geom_smooth(aes(x = wSI, y= rating), method = "lm", formula = y ~ poly(x, 2), se = FALSE, size = 0.7, color = "black")+
+  ylab("Rating")+xlab("Degree of syncopation")
+
+p + theme_minimal(base_size = 15)+ theme( legend.position="none")
+
+```
+
+########                               ~*~*~*~*~*~*~*~*~*~*                             ##########
+#                                          Analysis WSI                                         #
+##############                         *~*~*~*~*~*~*~*~*~*~                           ###########
+
+
+### Check correlation btw move and pleasure
+```{r }
+df_wide=read.csv("df_wide2.csv")
+df_wide$dizziness = as.factor(df_wide$dizziness)
+df_wide$practice = as.factor(df_wide$practice)
+df_wide$yrsStop = as.factor(df_wide$yrsStop)
+df_wide$yrsTraining = as.factor(df_wide$yrsTraining)
+df_wide$timeListen = as.factor(df_wide$timeListen)
+df_wide$ID = as.factor(df_wide$ID)
+
+#Account for repeated measures
+corval = rmcorr(ID, move, pleasure, df_wide)
+plot(corval)
+corval
+```
+
+
+### Mixed effects models
+```{r }
+
+m0 <- lmer(rating ~ 1 + (poly(wSI,2)|ID), data = df_m,
+           REML = FALSE, control = lmerControl(optimizer = "nlminbwrap", calc.derivs = FALSE))
+
+m1 = update(m0,.~.+poly(wSI,2)) 
+m2 = update(m1,.~.+Version) 
+m3 = update(m2,.~.+poly(wSI,2):Version)
+
+anova(m0, m1, m2, m3)
+
+summary(m3)
+summ(m3)
+```
+
+
+### Anova, post hocs
+```{r message = FALSE}
+options(digits = 3)
+#type III ANOVA
+anova(m3)
+
+#type II anova
+Anova(m3, type = 2,method = 'KR')
+#same pattern
+
+#Post hoc contrasts
+emR <- emmeans(m3,  ~ Version|poly(wSI,2), 'wSI', at = list(wSI = c(0,20,40,60,80)), pbkrtest.limit = 5280)
+
+# goes in consecutive order - not including all contrasts
+emR %>% 
+    contrast('consec', reverse = TRUE) %>% 
+    confint(by = NULL, adjust = "holm") 
+
+#holm p val
+emR %>% 
+    contrast('consec', reverse = TRUE, adjust = "holm")
+
+
+# Including all contrasts
+em2 <- emmeans(m3, pairwise~ Version|poly(wSI,2), 'wSI', at = list(wSI = c(0,20,40,60,80)), pbkrtest.limit = 5280)
+
+em2 %>%
+  confint(by = NULL, adjust = "holm")
+
+```
+
+### Diagnostic plots of final model
+```{r message = FALSE}
+#Diagnostic plots
+qqPlot(resid(m3)) 
+hist(resid(m3)) 
+
+#Homoscedasticity and linearity
+
+# Fitted vs. residual plot (linearity)
+plot(m3, type = c('p', 'smooth'))
+
+# Scale-location plot (homoscedasticity)
+plot(m3, sqrt(abs(resid(.))) ~ fitted(.), type = c("p", "smooth"))
+
+# Observed versus fitted values by Version
+plot(m3, rating ~ fitted(.) | Version, abline = c(0,1))
+```
+
+### Check ratings between studies
+```{r message = FALSE}
+df_1 = read.csv('df_1_across.csv')
+df_2 = read.csv('df_2_across.csv')
+
+df_1$Version[df_1$Version == "SN"] = "1"
+df_1$Version[df_1$Version == "SN+HH"] = "2"
+df_1$Version[df_1$Version == "SN+BD"] = "3"
+df_1$Version[df_1$Version == "SN+BD+HH"] = "4"
+
+df_2$Version[df_2$Version == "BD"] = "1"
+df_2$Version[df_2$Version == "BD+HH"] = "2"
+df_2$Version[df_2$Version == "BD+SN"] = "3"
+df_2$Version[df_2$Version == "BD+SN+HH"] = "4"
+
+df_all = bind_rows(df_1, df_2)
+
+df_all$Version = factor(df_all$Version, levels = c('4', '3','2','1'))
+
+df_all$study = as.factor(df_all$study)
+
+ggplot(df_all, aes(x = wSI, y= rating, group = study, colour = study))+
+  facet_wrap(~Version)+
+  ylim(0,100)+
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = TRUE)+
+  ylab("Rating")+xlab("Degree of syncopation") + theme_minimal(base_size = 15) + scale_color_brewer(palette="Dark2")
+
+
+m0 <- lmer(rating ~ 1 + (poly(wSI,2)|ID), data = df_all,
+           REML = FALSE, control = lmerControl(optimizer = "nlminbwrap", calc.derivs = FALSE))
+
+m1 = update(m0,.~.+poly(wSI,2)) 
+m2 = update(m1,.~.+Version) 
+m3 = update(m2,.~.+study) 
+m4 = update(m3,.~.+poly(wSI,2):Version)
+m5 = update(m4,.~.+poly(wSI,2)*Version*study)
+
+anova(m0, m1, m2, m3, m4,m5)
+
+summary(m5)
+
+#Post hoc contrasts
+emR <- emmeans(m5,  ~ study|poly(wSI,2)|Version, 'wSI', at = list(wSI = c(0,20,40,60,80)), pbkrtest.limit = 7392)
+
+# goes in consecutive order - not including all contrasts
+emR %>% 
+    contrast('consec', reverse = TRUE) %>% 
+    confint(by = NULL, adjust = "holm") 
+
+#holm p val
+emR %>% 
+    contrast('consec', reverse = TRUE, adjust = "holm")
+
+
+```

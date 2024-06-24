@@ -1,0 +1,276 @@
+---
+title: "Split stim online study"
+authors: Tomas Matthews & Alberte Seeberg
+date: "14/02/2024"
+output:
+  html_document:
+    df_print: paged
+  pdf: default
+  pdf_document: default
+root.dir: /Users/au555044/Desktop/CI_Groove_Project/Online/Analysis/Stim_split_NH
+---
+
+```{r include = FALSE}
+#set work directory
+setwd('/Users/au555044/Desktop/CI_Groove_Project/Online/Analysis/Stim_split_NH')
+
+#load packages
+library(tidyverse)
+library(ggplot2)
+library(cowplot)
+library(lme4)
+library(afex)
+library(ggpubr)
+library(rmcorr)
+library(car)
+library(dplyr)
+library(emmeans)
+library(jtools)
+library(kableExtra)
+
+#read data
+df_m = read.csv('df_m.csv')
+df_m$Version = factor(df_m$Version, levels = c('SN+BD+HH', 'SN+BD','SN+HH','SN'))
+df_m$yrsTraining = as.factor(df_m$yrsTraining)
+df_m$ID = as.factor(df_m$ID)
+df_m$dizziness = as.factor(df_m$dizziness)
+df_m$study = 1
+write.csv(df_m, 'df_1_across.csv')
+```
+
+
+########                               ~*~*~*~*~*~*~*~*~*~*                             ##########
+#                                            Plots!                                             #
+##############                         *~*~*~*~*~*~*~*~*~*~                           ###########
+
+
+```{r}
+
+###Making grid for combined plots of wsi and wsi full
+p_SN =ggplot(df_m, aes(x = wSI, y= rating, group = Version, colour = Version))+
+  #geom_point(aes(colour = rhythmType))+
+  ylim(0,100)+
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = TRUE)+
+  ylab("Rating")+xlab("Degree of syncopation") + theme_minimal(base_size = 15) + scale_color_brewer(palette="Dark2")+theme(axis.title.x=element_blank(), axis.title.y=element_blank(), legend.position="none")
+
+p_SN
+# 
+# #Plot using wSI_full column to see per rhythm differences
+# p2 =ggplot(df_m, aes(x = wSI_full, y= rating, group = Version, colour = Version))+
+#   #facet_wrap(~ratingType)+
+#   #geom_point(aes(colour = Version))+
+#   ylim(0,100)+
+#   geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = TRUE)+
+#   ylab("Rating")+xlab("Degree of syncopation")+theme_minimal(base_size = 15) + scale_color_brewer(palette="Dark2")+theme(axis.title.x=element_blank(), axis.title.y=element_blank(), legend.position="none")
+# 
+# p2
+# 
+plot_grid(p_SN, p_BD, labels = "AUTO")
+
+#Separate plots
+
+#Using wSI
+p =ggplot(df_m, aes(x = wSI, y= rating, group = Version, colour = Version))+
+  #geom_point(aes(colour = rhythmType))+
+  ylim(0,100)+
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = TRUE)+
+  ylab("Rating")+xlab("Degree of syncopation")
+
+p + theme_minimal(base_size = 15) + scale_color_brewer(palette="Dark2")
+
+#Plot using wSI_full column to see per rhythm differences
+p =ggplot(df_m, aes(x = wSI_full, y= rating, group = Version, colour = Version))+
+  #facet_wrap(~ratingType)+
+  #geom_point(aes(colour = Version))+
+  ylim(0,100)+
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = TRUE)+
+  ylab("Rating")+xlab("Degree of syncopation")
+
+p + theme_minimal(base_size = 15) + scale_color_brewer(palette="Dark2")
+
+plot_data = df_m
+plot_data$Version=factor(plot_data$Version, levels = c('SN', 'SN+HH','SN+BD','SN+BD+HH'))
+#Plot checking slopes per participant
+p =ggplot(plot_data)+
+  facet_grid(~Version)+
+  #ylim(,100)+
+  geom_smooth(aes(x = wSI, y= rating, group = ID, colour = ID), method = "lm", formula = y ~ poly(x, 2), se = FALSE, size = 0.3)+
+  geom_smooth(aes(x = wSI, y= rating), method = "lm", formula = y ~ poly(x, 2), se = FALSE, size = 0.7, color = "black")+
+  ylab("Rating")+xlab("Degree of syncopation")
+
+p + theme_minimal(base_size = 15)+ theme( legend.position="none")
+
+
+```
+
+########                               ~*~*~*~*~*~*~*~*~*~*                             ##########
+#                                          Analysis WSI                                         #
+##############                         *~*~*~*~*~*~*~*~*~*~                           ###########
+
+
+### Check correlation btw move and pleasure
+```{r }
+df_wide=read.csv("df_wide.csv")
+df_wide$dizziness = as.factor(df_wide$dizziness)
+df_wide$practice = as.factor(df_wide$practice)
+df_wide$yrsStop = as.factor(df_wide$yrsStop)
+df_wide$yrsTraining = as.factor(df_wide$yrsTraining)
+df_wide$timeListen = as.factor(df_wide$timeListen)
+df_wide$ID = as.factor(df_wide$ID)
+
+
+#Correlation accounting for repeated measures
+corval = rmcorr(ID, move, pleasure, df_wide)
+plot(corval)
+corval
+
+```
+
+
+### Mixed effects models
+```{r}
+
+m0 <- lmer(rating ~ 1 + (poly(wSI,2)|ID), data = df_m,
+           REML = FALSE, control = lmerControl(optimizer = "nlminbwrap", calc.derivs = FALSE))
+
+m1 = update(m0,.~.+poly(wSI,2)) 
+m2 = update(m1,.~.+Version) 
+m3 = update(m2,.~.+poly(wSI,2):Version)
+
+anova(m0, m1, m2, m3)
+summary(m3)
+```
+
+
+### Anova, post hocs
+```{r message = FALSE}
+options(digits = 3)
+#type III ANOVA
+anova(m3)
+
+#type II anova
+Anova(m3, type = 2,method = 'KR')
+#same pattern
+
+#Post hoc contrasts
+emR <- emmeans(m3,  ~ Version|poly(wSI,2), 'wSI', at = list(wSI = c(0,20,40,60,80)), pbkrtest.limit = 5280)
+
+#Inverted order to see differences within versions
+emR <- emmeans(m3,  ~ poly(wSI,2)|Version, 'wSI', at = list(wSI = c(80,60,40,20,0)), pbkrtest.limit = 5280)
+
+# goes in consecutive order - not including all contrasts
+emR %>% 
+    contrast('consec', reverse = TRUE) %>% 
+    confint(by = NULL, adjust = "holm") 
+
+#bonferroni p val
+emR %>% 
+    contrast('consec', reverse = TRUE, adjust = "holm")
+
+
+
+# Including all contrasts
+em2 <- emmeans(m3, pairwise~ Version|poly(wSI,2), 'wSI', at = list(wSI = c(0,20,40,60,80)), pbkrtest.limit = 5280)
+
+em2 %>%
+  confint(by = NULL, adjust = "holm")
+
+```
+
+### Diagnostic plots of final model
+```{r message = FALSE}
+#Diagnostic plots
+qqPlot(resid(m3)) 
+hist(resid(m3)) 
+
+#Homoscedasticity and linearity
+
+# Fitted vs. residual plot (linearity)
+plot(m3, type = c('p', 'smooth'))
+
+# Scale-location plot (homoscedasticity)
+plot(m3, sqrt(abs(resid(.))) ~ fitted(.), type = c("p", "smooth"))
+
+# Observed versus fitted values by Version
+plot(m3, rating ~ fitted(.) | Version, abline = c(0,1))
+```
+
+
+########                               ~*~*~*~*~*~*~*~*~*~*                             ##########
+#                                       Analysis pr Rhythm                                      #
+##############                         *~*~*~*~*~*~*~*~*~*~                           ###########
+
+### Mixed effects models
+```{r }
+
+m0 <- lmer(rating ~ 1 + (poly(wSI_full,2)|ID), data = df_m,
+           REML = FALSE, control = lmerControl(optimizer = "nlminbwrap", calc.derivs = FALSE))
+
+#> m0 <- lmer(rating ~ 1 + (poly(wSI,2)|ID), data = df_m,
+#+            REML = FALSE, control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE))
+#boundary (singular) fit: see help('isSingular')
+#Warning message:
+#Model failed to converge with 1 negative eigenvalue: -3.1e-05 
+
+#Solution
+#library(broom.mixed), library(optimx), library(dfoptim)
+#aa <- allFit(m0)
+#glance(aa) |> select(optimizer, AIC, NLL_rel) |> arrange(NLL_rel)
+
+
+m1 = update(m0,.~.+poly(wSI_full,2)) 
+m2 = update(m1,.~.+Version) 
+m3 = update(m2,.~.+poly(wSI_full,2):Version)
+
+anova(m0, m1, m2, m3)
+
+summary(m3, correl = FALSE)$varcor
+summary(m3)
+
+
+```
+
+
+### Anova, post hocs
+```{r message = FALSE}
+#type III ANOVA
+anova(m3)
+
+#type II anova
+Anova(m3, type = 2,method = 'KR')
+#same pattern
+
+#Post hoc contrasts
+
+emR <- emmeans(m3,  ~ Version|poly(wSI_full,2), 'wSI_full', at = list(wSI_full = c(0,20,40,60,80)), pbkrtest.limit = 5280)
+
+# goes in consecutive order - not including all contrasts
+emR %>% 
+    contrast('consec', reverse = TRUE) %>% 
+    confint(by = NULL, adjust = "mvt") 
+
+# Including all contrasts
+em2 <- emmeans(m3, pairwise~ Version|poly(wSI_full,2), 'wSI_full', at = list(wSI_full = c(0,20,40,60,80)), pbkrtest.limit = 5280)
+
+em2 %>%
+  confint(by = NULL, adjust = "mvt")
+
+```
+
+### Diagnostic plots of final model
+```{r message = FALSE}
+# Diagnostic plots
+qqPlot(resid(m3)) 
+hist(resid(m3)) 
+
+# Homoscedasticity and linearity
+
+# Fitted vs. residual plot (linearity)
+plot(m3, type = c('p', 'smooth'))
+
+# Scale-location plot (homoscedasticity)
+plot(m3, sqrt(abs(resid(.))) ~ fitted(.), type = c("p", "smooth"))
+
+## Observed versus fitted values by Version
+plot(m3, rating ~ fitted(.) | Version, abline = c(0,1))
+```

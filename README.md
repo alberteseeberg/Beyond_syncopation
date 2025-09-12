@@ -1,6 +1,6 @@
 ## Beyond syncopation: The number of rhythmic streams shape the pleasurable urge to move to music!
 
-Here you can find the scripts used for the online experiment as well as the statistical analyses in the paper. The paper can be found [here](https://doi-org.ep.fjernadgang.kb.dk/10.1016/j.cognition.2025.106178).
+Here you can find the scripts used for the online experiment as well as the statistical analyses in the paper. The paper can be found [here](10.1016/j.cognition.2025.106178).
 
 *index.html* contains the code to host the experiment on an online server and loading the plugins from jsPsych. 
 
